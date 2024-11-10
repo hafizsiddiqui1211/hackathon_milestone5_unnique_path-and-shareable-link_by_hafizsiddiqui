@@ -1,92 +1,72 @@
-//listing element
-document.getElementById("resumeform")?.addEventListener("submit" , function(event) {
-event.preventDefault();
+console.log("Script Loaded Successfully");
 
-//type assertion
-const imageElement = document.getElementById("image") as HTMLInputElement;
-const nameElement = document.getElementById("name") as HTMLInputElement;
-const emailElement = document.getElementById("email") as HTMLInputElement;
-const phoneElement = document.getElementById("phone") as HTMLInputElement;
-const educationElement = document.getElementById("education") as HTMLTextAreaElement;
-const experienceElement = document.getElementById("experience") as HTMLTextAreaElement;
-const skillsElement = document.getElementById("skills") as HTMLTextAreaElement;
+const skillsFieldset = document.querySelector('fieldset:nth-of-type(4)') as HTMLFieldSetElement;
+const toggleButton = document.createElement('button');
+toggleButton.textContent = "Toggle Skills Section";
+toggleButton.type = "button";
+toggleButton.className = "toggle-button";
 
-const usernameElement = document.getElementById("username")as HTMLInputElement;
-if(imageElement && nameElement && emailElement && phoneElement && educationElement && experienceElement && skillsElement && usernameElement){
+const form = document.getElementById('resumeform') as HTMLFormElement;
+form.insertBefore(toggleButton, form.querySelector('button[type="submit"]'));
 
-    const name = nameElement.value;
-    const email = emailElement.value;
-    const phone = phoneElement.value;
-    const education = educationElement.value;
-    const experience = experienceElement.value;
-    const skills = skillsElement.value;
-    const image = imageElement.files?.[0];
-    const imageURL = image ? URL.createObjectURL(image) :"";
-    const username = usernameElement.value;
-    const uniquepath=`resumes/${username.replace(/\s+/g,'_')}_cv.html`;
+// Toggle visibility of Skills fieldset with smooth transition
+toggleButton.addEventListener('click', () => {
+    skillsFieldset.style.display = skillsFieldset.style.display === "none" ? "block" : "none";
+    toggleButton.textContent = skillsFieldset.style.display === "none" ? "Show Skills Section" : "Hide Skills Section";
+});
 
-//create resume output
-const resumeOutput = `
-<h2>Resume Output</h2>
-${imageURL ? `<img src="${imageURL} alt="image" class="image">` :''}
-<p><strong>Name:</strong><span id="edit-name" class=""editable>${name}</span></p>
-<p><strong>Email:</strong><span id="edit-email" class=""editable>${email}</span></p>
-<p><strong>Phone:</strong><span id="edit-phone" class=""editable>${phone}</span></p>
+// Profile picture and form data elements
+const imageInput = document.getElementById("image") as HTMLInputElement;
+const profilePicture = document.getElementById("profile-picture") as HTMLImageElement;
+const nameInput = document.getElementById("name") as HTMLInputElement;
+const emailInput = document.getElementById("email") as HTMLInputElement;
+const phoneInput = document.getElementById("Phone") as HTMLInputElement;
+const educationInput = document.getElementById("education") as HTMLTextAreaElement;
+const experienceInput = document.getElementById("experience") as HTMLTextAreaElement;
+const skillsInput = document.getElementById("skills") as HTMLTextAreaElement;
+const output = document.getElementById("output") as HTMLElement;
 
-<h3>Education</h3>
-<p id="edit-education" class=""editable>${education}</p>
+form.addEventListener("submit", (event) => {
+    event.preventDefault();
 
-<h3>Experience</h3>
-<p id="edit-experience" class=""editable>${experience}</p>
+    // Display profile picture if uploaded
+    if (imageInput.files && imageInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function () {
+            profilePicture.style.display = "block";
+            profilePicture.src = reader.result as string;
+        };
+        reader.readAsDataURL(imageInput.files[0]);
+    }
 
-<h3>Skills</h3>
-<p id="edit-skills" class=""editable>${skills}</p>
-`;
+    // Display resume information
+    document.getElementById("resume-name")!.textContent = `${nameInput.value}`;
+    document.getElementById("resume-email")!.textContent = `Email: ${emailInput.value}`;
+    document.getElementById("resume-phone")!.textContent = `Phone: ${phoneInput.value}`;
+    document.getElementById("resume-education")!.textContent = educationInput.value;
+    document.getElementById("resume-experience")!.textContent = experienceInput.value;
+    document.getElementById("resume-skills")!.textContent = skillsInput.value;
 
-const downloadLink=document.createElement('a');
-downloadLink.href='data:text/html;charset=utf-8,' + encodeURIComponent(resumeOutput)
-downloadLink.download= uniquepath;
-downloadLink.textContent="Download Your 2024 Resume";
+    // Show the generated resume
+    output.style.display = "block";
 
+    // Generate unique link based on username
+    const username = nameInput.value.toLowerCase().replace(/ /g, "-");
+    const generatedLink = document.getElementById("generatedLink") as HTMLAnchorElement;
+    generatedLink.href = `https://${username}.vercel.app/resume`;
+    generatedLink.textContent = generatedLink.href;
+    document.getElementById("resumeLink")!.style.display = "block";
+});
 
-const resumeOutputElement=document.getElementById('resumeOutput');
-
-if(resumeOutputElement){
-    resumeOutputElement.innerHTML=resumeOutput;
-    resumeOutputElement.appendChild(downloadLink);
-    resumeOutputElement.style.display="block";
-}
-}else {
-    console.error("One or more output elements are missing from resume output.");
-
-}
-})
-
-function makeEditable(){
-    const editableElements = document.querySelectorAll('.editable');
-    editableElements.forEach(element => {
-        element.addEventListener('click', function() {
-            const currentElement = element as HTMLElement;
-            const currentvalue = currentElement.textContent || "";
-
-            //replace content
-            if(currentElement.tagName ==="P" || currentElement.tagName ==="SPAN"){
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.value = currentvalue;
-                input.classList.add('editing-input');
-
-                input.addEventListener('blur', function() {
-                    currentElement.textContent =input.value;
-                    currentElement.style.display ='inline';
-                    input.remove();
-                })
-
-                currentElement.style.display ='none';
-                currentElement.parentNode?.insertBefore(input, currentElement);
-                input.focus();
-
-            }
-        })
-    })
-}
+// Event listener for the "Download PDF" button
+const downloadPdfButton = document.getElementById("downloadPdfButton") as HTMLButtonElement;
+downloadPdfButton.addEventListener("click", () => {
+    const options = {
+        margin: 1,
+        filename: `${nameInput.value.toLowerCase().replace(/ /g, "_")}_resume.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    html2pdf().set(options).from(output).save();
+});
