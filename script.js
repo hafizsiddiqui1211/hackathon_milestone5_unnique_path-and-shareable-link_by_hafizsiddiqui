@@ -60,3 +60,4 @@ downloadPdfButton.addEventListener("click", function () {
     };
     html2pdf().set(options).from(output).save();
 });
+
