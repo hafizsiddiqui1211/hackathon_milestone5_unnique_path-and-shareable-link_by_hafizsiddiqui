@@ -1,67 +1,62 @@
-var _a;
-//listing element
-(_a = document.getElementById("resumeform")) === null || _a === void 0 ? void 0 : _a.addEventListener("submit", function (event) {
-    var _a;
-    event.preventDefault();
-    //type assertion
-    var imageElement = document.getElementById("image");
-    var nameElement = document.getElementById("name");
-    var emailElement = document.getElementById("email");
-    var phoneElement = document.getElementById("phone");
-    var educationElement = document.getElementById("education");
-    var experienceElement = document.getElementById("experience");
-    var skillsElement = document.getElementById("skills");
-    var usernameElement = document.getElementById("username");
-    if (imageElement && nameElement && emailElement && phoneElement && educationElement && experienceElement && skillsElement && usernameElement) {
-        var name_1 = nameElement.value;
-        var email = emailElement.value;
-        var phone = phoneElement.value;
-        var education = educationElement.value;
-        var experience = experienceElement.value;
-        var skills = skillsElement.value;
-        var image = (_a = imageElement.files) === null || _a === void 0 ? void 0 : _a[0];
-        var imageURL = image ? URL.createObjectURL(image) : "";
-        var username = usernameElement.value;
-        var uniquepath = "resumes/".concat(username.replace(/\s+/g, '_'), "_cv.html");
-        //create resume output
-        var resumeOutput = "\n<h2>Resume Output</h2>\n".concat(imageURL ? "<img src=\"".concat(imageURL, " alt=\"image\" class=\"image\">") : '', "\n<p><strong>Name:</strong><span id=\"edit-name\" class=\"\"editable>").concat(name_1, "</span></p>\n<p><strong>Email:</strong><span id=\"edit-email\" class=\"\"editable>").concat(email, "</span></p>\n<p><strong>Phone:</strong><span id=\"edit-phone\" class=\"\"editable>").concat(phone, "</span></p>\n\n<h3>Education</h3>\n<p id=\"edit-education\" class=\"\"editable>").concat(education, "</p>\n\n<h3>Experience</h3>\n<p id=\"edit-experience\" class=\"\"editable>").concat(experience, "</p>\n\n<h3>Skills</h3>\n<p id=\"edit-skills\" class=\"\"editable>").concat(skills, "</p>\n");
-        var downloadLink = document.createElement('a');
-        downloadLink.href = 'data:text/html;charset=utf-8,' + encodeURIComponent(resumeOutput);
-        downloadLink.download = uniquepath;
-        downloadLink.textContent = "Download Your 2024 Resume";
-        var resumeOutputElement = document.getElementById('resumeOutput');
-        if (resumeOutputElement) {
-            resumeOutputElement.innerHTML = resumeOutput;
-            resumeOutputElement.appendChild(downloadLink);
-            resumeOutputElement.style.display = "block";
-        }
-    }
-    else {
-        console.error("One or more output elements are missing from resume output.");
-    }
+console.log("Script Loaded Successfully");
+var skillsFieldset = document.querySelector('fieldset:nth-of-type(4)');
+var toggleButton = document.createElement('button');
+toggleButton.textContent = "Toggle Skills Section";
+toggleButton.type = "button";
+toggleButton.className = "toggle-button";
+var form = document.getElementById('resumeform');
+form.insertBefore(toggleButton, form.querySelector('button[type="submit"]'));
+// Toggle visibility of Skills fieldset with smooth transition
+toggleButton.addEventListener('click', function () {
+    skillsFieldset.style.display = skillsFieldset.style.display === "none" ? "block" : "none";
+    toggleButton.textContent = skillsFieldset.style.display === "none" ? "Show Skills Section" : "Hide Skills Section";
 });
-function makeEditable() {
-    var editableElements = document.querySelectorAll('.editable');
-    editableElements.forEach(function (element) {
-        element.addEventListener('click', function () {
-            var _a;
-            var currentElement = element;
-            var currentvalue = currentElement.textContent || "";
-            //replace content
-            if (currentElement.tagName === "P" || currentElement.tagName === "SPAN") {
-                var input_1 = document.createElement('input');
-                input_1.type = 'text';
-                input_1.value = currentvalue;
-                input_1.classList.add('editing-input');
-                input_1.addEventListener('blur', function () {
-                    currentElement.textContent = input_1.value;
-                    currentElement.style.display = 'inline';
-                    input_1.remove();
-                });
-                currentElement.style.display = 'none';
-                (_a = currentElement.parentNode) === null || _a === void 0 ? void 0 : _a.insertBefore(input_1, currentElement);
-                input_1.focus();
-            }
-        });
-    });
-}
+// Profile picture and form data elements
+var imageInput = document.getElementById("image");
+var profilePicture = document.getElementById("profile-picture");
+var nameInput = document.getElementById("name");
+var emailInput = document.getElementById("email");
+var phoneInput = document.getElementById("Phone");
+var educationInput = document.getElementById("education");
+var experienceInput = document.getElementById("experience");
+var skillsInput = document.getElementById("skills");
+var output = document.getElementById("output");
+form.addEventListener("submit", function (event) {
+    event.preventDefault();
+    // Display profile picture if uploaded
+    if (imageInput.files && imageInput.files[0]) {
+        var reader_1 = new FileReader();
+        reader_1.onload = function () {
+            profilePicture.style.display = "block";
+            profilePicture.src = reader_1.result;
+        };
+        reader_1.readAsDataURL(imageInput.files[0]);
+    }
+    // Display resume information
+    document.getElementById("resume-name").textContent = "".concat(nameInput.value);
+    document.getElementById("resume-email").textContent = "Email: ".concat(emailInput.value);
+    document.getElementById("resume-phone").textContent = "Phone: ".concat(phoneInput.value);
+    document.getElementById("resume-education").textContent = educationInput.value;
+    document.getElementById("resume-experience").textContent = experienceInput.value;
+    document.getElementById("resume-skills").textContent = skillsInput.value;
+    // Show the generated resume
+    output.style.display = "block";
+    // Generate unique link based on username
+    var username = nameInput.value.toLowerCase().replace(/ /g, "-");
+    var generatedLink = document.getElementById("generatedLink");
+    generatedLink.href = "https://".concat(username, ".vercel.app/resume");
+    generatedLink.textContent = generatedLink.href;
+    document.getElementById("resumeLink").style.display = "block";
+});
+// Event listener for the "Download PDF" button
+var downloadPdfButton = document.getElementById("downloadPdfButton");
+downloadPdfButton.addEventListener("click", function () {
+    var options = {
+        margin: 1,
+        filename: "".concat(nameInput.value.toLowerCase().replace(/ /g, "_"), "_resume.pdf"),
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    html2pdf().set(options).from(output).save();
+});
